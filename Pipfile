@@ -7,8 +7,6 @@ verify_ssl = true
 
 [packages]
 pytelegrambotapi = "*"
-beautifulsoup4 = "*"
-telethon = "*"
 
 [requires]
 python_version = "3.7"
