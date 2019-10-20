@@ -2,13 +2,13 @@ import telebot
 import pymongo
 import os
 
-if 'BOT_TOKEN' not in os.environ:
-    print("Please set env variable: BOT_TOKEN")
+if 'BOT_TOKEN' not in os.environ or 'BOT_LOGIN' not in os.environ or 'BOT_NAME' not in os.environ:
+    print("Please set env variables: BOT_TOKEN, BOT_LOGIN, BOT_NAME")
     exit(0)
 
 TOKEN = os.environ['BOT_TOKEN']
-LOGIN = os.environ.get('BOT_LOGIN', "pinginatorbot")
-NAME = os.environ.get('BOT_NAME', "Pinginator")
+LOGIN = os.environ['BOT_LOGIN']
+NAME = os.environ['BOT_NAME']
 client = pymongo.MongoClient()
 groups = client.botDb
 bot = telebot.TeleBot(TOKEN)
