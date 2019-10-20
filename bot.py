@@ -21,7 +21,7 @@ def insert_user(message, user=None):
                                                 {'$set': {'name': user.username}}, True)
 
 
-@bot.message_handler(commands=['ping'])
+@bot.message_handler(commands=['ping', 'all'])
 def text_handler(message):
     chat_id = message.chat.id
     is_private = message.chat.type == 'private'
@@ -41,7 +41,7 @@ def text_handler(message):
 @bot.message_handler(commands=['start', 'help'])
 def start_handler(message):
     bot.send_message(message.chat.id, 'Hello ' + message.from_user.first_name + ', my name is ' + NAME + '.\n'
-                                      'I will ping all user in group, if you use /ping\n' +
+                                      'I will ping all user in group, if you use /ping or /all\n' +
                                       ('I am useless in private chat. I am group bot.' if message.chat.type == 'private' else ''))
     insert_user(message)
 
@@ -61,7 +61,7 @@ def handler_text(message):
     if '@' + LOGIN in message.text:
         bot.send_message(message.chat.id, '@' + message.from_user.username)
     elif NAME in message.text:
-        bot.send_message(message.chat.id, 'What do you want?')
+        bot.send_message(message.chat.id, 'Am i joke to you?')
     insert_user(message)
 
 
