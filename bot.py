@@ -14,10 +14,11 @@ groups = client.botDb
 bot = telebot.TeleBot(TOKEN)
 
 
-def insert_user(message):
-    if message.chat.type != 'private':
-        groups[str(message.chat.id)].update_one({'name': message.from_user.username},
-                                                {'$set': {'name': message.from_user.username}}, True)
+def insert_user(message, user=None):
+    user = message.from_user if user is None else user
+    if message.chat.type != 'private' and not user.is_bot:
+        groups[str(message.chat.id)].update_one({'name': user.username},
+                                                {'$set': {'name': user.username}}, True)
 
 
 @bot.message_handler(commands=['ping'])
@@ -30,7 +31,7 @@ def text_handler(message):
         text = ''
         users = groups[str(message.chat.id)].find({})
         for user in users:
-            if user['name'] != message.from_user.username and user['name'] != NAME:
+            if user['name'] != message.from_user.username:
                 text += '@' + user['name'] + ' '
         if len(text) > 0:
             bot.send_message(message.chat.id, text)
@@ -47,18 +48,20 @@ def start_handler(message):
 
 @bot.message_handler(content_types=["new_chat_members"])
 def handler_new_member(message):
-    groups[str(message.chat.id)].insert_one({'name': message.new_chat_member.username})
+    insert_user(message, message.new_chat_member)
 
 
 @bot.message_handler(content_types=["left_chat_member"])
 def handler_left_member(message):
-    groups[str(message.chat.id)].delete_one({'name': message.left_chat_member.username})
+    groups[str(message.chat.id)].delete_many({'name': message.left_chat_member.username})
 
 
 @bot.message_handler(content_types=["text"])
 def handler_text(message):
-    if '@' + NAME in message.text:
+    if '@' + LOGIN in message.text:
         bot.send_message(message.chat.id, '@' + message.from_user.username)
+    elif NAME in message.text:
+        bot.send_message(message.chat.id, 'What do you want?')
     insert_user(message)
 
 
