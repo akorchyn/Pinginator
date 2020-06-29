@@ -42,7 +42,7 @@ def create_quiet_keyboard(is_begin: bool):
 
 
 def try_insert_user(group_id: int, user: types.User, chat_type: str):
-    if chat_type != 'private':
+    if chat_type != 'private' and not user.is_bot:
         db.insert_user(group_id, User(user.id))
 
 
