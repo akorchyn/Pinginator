@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, time
 
+from pymongo import MongoClient
 from telebot import TeleBot, types
 
 import db
@@ -14,7 +15,7 @@ TOKEN = os.environ['BOT_TOKEN']
 LOGIN = os.environ['BOT_LOGIN']
 NAME = os.environ['BOT_NAME']
 bot = TeleBot(TOKEN)
-db = db.PinginatorDb()
+db = db.PinginatorDb(MongoClient(os.environ('MONGODB_CONNECTION')))
 
 
 def is_creator(group_id, user_id):
