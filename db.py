@@ -4,9 +4,9 @@ from group import Group, User
 
 
 class PinginatorDb:
-    def __init__(self, client: db.MongoClient = db.MongoClient()):
+    def __init__(self, client: db.MongoClient = db.MongoClient(), database: str = 'PinginatorDb'):
         self.__client = client
-        self.__db = client['PinginatorDb']
+        self.__db = client[database]
         self.__groups_collection = self.__db['groups']
 
     def add_beginning_quiet_hour(self, group_id: int, beginning_quiet_hour: int) -> None:

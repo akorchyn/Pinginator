@@ -15,7 +15,7 @@ TOKEN = os.environ['BOT_TOKEN']
 LOGIN = os.environ['BOT_LOGIN']
 NAME = os.environ['BOT_NAME']
 bot = TeleBot(TOKEN)
-db = db.PinginatorDb(MongoClient(os.environ['MONGODB_URI']))
+db = db.PinginatorDb(MongoClient(os.environ['MONGODB_URI'], os.environ['DB']))
 
 
 def is_creator(group_id, user_id):
