@@ -112,9 +112,12 @@ def guest_quiet_handler(message):
 
 @bot.message_handler(commands=['start', 'help'])
 def start_handler(message):
-    bot.send_message(message.chat.id, 'Hello ' + message.from_user.first_name + ', my name is ' + NAME +
-                     '.\nI will ping all user in group, if you use /ping or /all\n' +
-                     ('I am useless in private chat. I am group bot.' if message.chat.type == 'private' else ''))
+    bot.send_message(message.chat.id, 'Hi ' + message.from_user.first_name + ',\n\n I am '
+                     + NAME + ', bot which would help you to notify all people in a group.\n\n'
+                              'Use /ping or /all in a chat to take attention\n\n'
+                              'Also you could configure me:\nWrite /quiet_hours to set a time range'
+                              'in which I won\'t ping anyone\nWrite /admin_only to introduce a dictatorship of '
+                              'administrators into your chat.\n')
     try_insert_user(message.chat.id, message.from_user, message.chat.type)
 
 
