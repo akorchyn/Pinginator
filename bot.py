@@ -62,6 +62,8 @@ def text_handler(message: types.Message):
         return
     text = ''
     for user in group.users:
+        if user.id == message.from_user.id:
+            continue
         user_info: types.User = bot.get_chat_member(group_id, user.id).user
         if user_info is not None:
             text += '[{}](tg://user?id={}), '.format(
