@@ -28,6 +28,7 @@ Bot configuration: (only to creator of group)
 ## TO DO:
 ```
 add pagination to /quiet_hours
+specify team and ping the corresponding team
 
 Group creator usage:
 /usage_cost  - you could provide the cost of usage ping functionality. 1 corresponds to 1 hour.
