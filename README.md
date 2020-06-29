@@ -19,7 +19,21 @@ You have to set environment variables BOT_TOKEN, BOT_LOGIN, BOT_NAME.
 /help, /start - print usage
 
 /ping - pings all collected users
-
-@pinginator - responses to you
 ```
+
+## TO DO:
+
+```
+add pagination to /quite_hours
+add logic quite hours
+move db logic to separate file. 
+
+Group creator usage:
+/quite_hours - bot won't ping in quiet hours.
+/admin_only  - only administrators could use ping functionallity
+/usage_cost  - you could provide the cost of usage ping functionality. 1 corresponds to 1 hour.
+               Please, notice by default user can't hold it more than 3 usages.
+/max_usage   - amount of usages that user can collect. Usage cost mode only.
+```
+
 ## Have fun
