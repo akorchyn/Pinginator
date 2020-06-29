@@ -22,6 +22,7 @@ You have to set environment variables BOT_TOKEN, BOT_LOGIN, BOT_NAME.
 
 Bot configuration: (only by creator)
 /quiet_hours - bot won't ping in quiet hours.
+/admin_only  - only administrators could use ping functionallity
 ```
 
 ## TO DO:
@@ -29,7 +30,6 @@ Bot configuration: (only by creator)
 add pagination to /quiet_hours
 
 Group creator usage:
-/admin_only  - only administrators could use ping functionallity
 /usage_cost  - you could provide the cost of usage ping functionality. 1 corresponds to 1 hour.
                Please, notice by default user can't hold it more than 3 usages.
 /max_usage   - amount of usages that user can collect. Usage cost mode only.

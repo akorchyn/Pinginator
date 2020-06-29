@@ -2,31 +2,22 @@ from datetime import datetime, time
 
 
 class User:
-    name = ""
-
-    def __init__(self, username: str):
-        self.name = username
+    def __init__(self, user_id: int):
+        self.id = user_id
 
 
 class Group:
-    def __init__(self, users: [User], quiet_hours: (int, int) = None):
-        self._quiet_hours = quiet_hours
-        self._users = users
-
-    def get_users(self) -> [str]:
-        return self._users
+    def __init__(self, users: [User], admin_only, quiet_hours: (int, int) = None):
+        self.quiet_hours = quiet_hours
+        self.users = users
+        self.is_admin_only = admin_only
 
     def is_quiet_hours_enabled(self, message_time: datetime) -> bool:
-        if self._quiet_hours is None:
+        if self.quiet_hours is None:
             return False
-        begin_hour, end_hour = [time(x, 0) for x in self._quiet_hours]
+        begin_hour, end_hour = [time(x, 0) for x in self.quiet_hours]
         check_time = message_time.time()
         if begin_hour < end_hour:
             return begin_hour <= check_time <= end_hour
         else:  # crosses midnight
             return check_time >= begin_hour or check_time <= end_hour
-
-    def quite_hour_ending(self) -> time or None:
-        if self._quiet_hours is None:
-            return None
-        return time(self._quiet_hours[1], 0)
