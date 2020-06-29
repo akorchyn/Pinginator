@@ -21,14 +21,12 @@ You have to set environment variables BOT_TOKEN, BOT_LOGIN, BOT_NAME.
 /ping - pings all collected users
 
 Bot configuration: (only by creator)
-/quite_hours - bot won't ping in quiet hours.
+/quiet_hours - bot won't ping in quiet hours.
 ```
 
 ## TO DO:
-
 ```
-add pagination to /quite_hours
-move db logic to separate file. 
+add pagination to /quiet_hours
 
 Group creator usage:
 /admin_only  - only administrators could use ping functionallity
