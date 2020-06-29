@@ -47,7 +47,9 @@ def text_handler(message: types.Message):
     try_insert_user(group_id, message.from_user, message.chat.type)
     group = db.get_group(group_id)
     if group.is_quiet_hours_enabled(datetime.fromtimestamp(message.date)):
-        bot.send_message(group_id, 'quiet hours are now. Sorry')
+        bot.send_message(group_id, 'Quiet hour politic is enabled now. I can\'t send a message.'
+                                   ' Please, use after ' + str(group.quite_hour_ending()) +
+                         ', or change politic if you are the creator.')
         return
 
     text = ''

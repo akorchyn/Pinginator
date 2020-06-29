@@ -25,3 +25,8 @@ class Group:
             return begin_hour <= check_time <= end_hour
         else:  # crosses midnight
             return check_time >= begin_hour or check_time <= end_hour
+
+    def quite_hour_ending(self) -> time or None:
+        if self._quiet_hours is None:
+            return None
+        return time(self._quiet_hours[1], 0)
