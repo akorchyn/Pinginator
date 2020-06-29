@@ -20,7 +20,7 @@ You have to set environment variables BOT_TOKEN, BOT_LOGIN, BOT_NAME.
 
 /ping - pings all collected users
 
-Bot configuration: (only by creator)
+Bot configuration: (only to creator of group)
 /quiet_hours - bot won't ping in quiet hours.
 /admin_only  - only administrators could use ping functionallity
 ```
