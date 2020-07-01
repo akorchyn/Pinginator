@@ -1,9 +1,6 @@
 import os
-import threading
-import time as tm
 from datetime import datetime, time
 
-import schedule
 from pymongo import MongoClient
 from telebot import TeleBot, types
 
@@ -144,7 +141,10 @@ def handler_new_member(message: types.Message):
 
 @bot.message_handler(content_types=["left_chat_member"])
 def handler_left_member(message: types.Message):
-    db.remove_user(message.chat.id, User(message.left_chat_member.id))
+    if message.left_chat_member.username == LOGIN:  # Bot kicked from the chat, delete collected users
+        db.remove_chat(message.chat.id)
+    else:
+        db.remove_user(message.chat.id, User(message.left_chat_member.id))
 
 
 @bot.message_handler(content_types=["text"])
@@ -156,28 +156,4 @@ def handler_text(message):
     try_insert_user(message.chat.id, message.from_user, message.chat.type)
 
 
-def clean_up():
-    for group in db.get_all_groups():
-        chat_id = group['_id']
-        try:
-            bot.get_chat_members_count(chat_id)
-        except:
-            db.remove_chat(chat_id)
-
-
-def run_bot():
-    bot.polling()
-
-
-def run_schedulers():
-    schedule.every().day.at('04:00').do(clean_up)
-    while True:
-        schedule.run_pending()
-        tm.sleep(60)
-
-
-if __name__ == "__main__":
-    t1 = threading.Thread(target=run_bot)
-    t2 = threading.Thread(target=run_schedulers)
-    t1.start()
-    t2.start()
+bot.polling()
