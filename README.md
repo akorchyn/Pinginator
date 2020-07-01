@@ -18,7 +18,7 @@ BOT_TOKEN - to provide telegram bot token
 BOT_LOGIN - to provide a bot tag (for example: @pinginatorbot)
 BOT_NAME - to provide name of the bot (for example: Pinginator)
 MONGODB_URI - to provide the credentials to the mongodb connection (for example localhost)
-DB - to provide the name of the database that should be used by the bot. Please, note that bot will use groups collection.
+DB - to provide the name of the database that should be used by the bot. Please, note that bot will use `groups` collection.
 ```
 
 ## Commands
