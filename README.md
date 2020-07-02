@@ -34,6 +34,6 @@ Bot configuration: (only for the creator of group)
 ```
 
 ## TODO:
-Project board: <https://github.com/users/akorchyn/projects/1>
+Project board: <https://github.com/akorchyn/Pinginator/projects/1>
 
 ## Have fun
