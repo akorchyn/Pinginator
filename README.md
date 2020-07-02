@@ -34,14 +34,6 @@ Bot configuration: (only for the creator of group)
 ```
 
 ## TODO:
-```
-add pagination to /quiet_hours
-specify team and ping the corresponding team
-
-Group creator usage:
-/usage_cost  - you could provide the cost of usage ping functionality. 1 corresponds to 1 hour.
-               Please, notice by default user can't hold it more than 3 usages.
-/max_usage   - the number of usages that the user can collect. Usage cost mode only.
-```
+Project board: <https://github.com/users/akorchyn/projects/1>
 
 ## Have fun
