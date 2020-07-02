@@ -6,6 +6,7 @@ from telebot import TeleBot, types
 
 import db
 from group import User
+from inline_keyboard_paginator import InlineKeyboardPaginator
 
 if 'BOT_TOKEN' not in os.environ or 'BOT_LOGIN' not in os.environ or 'BOT_NAME' not in os.environ:
     print("Please set env variables: BOT_TOKEN, BOT_LOGIN, BOT_NAME")
@@ -14,8 +15,13 @@ if 'BOT_TOKEN' not in os.environ or 'BOT_LOGIN' not in os.environ or 'BOT_NAME' 
 TOKEN = os.environ['BOT_TOKEN']
 LOGIN = os.environ['BOT_LOGIN']
 NAME = os.environ['BOT_NAME']
-bot = TeleBot(TOKEN)
+TIME_RANGE = [str(x) for x in range(24)]
+
+from_inline_keyboard_paginator = InlineKeyboardPaginator(TIME_RANGE, 4, "from")
+to_inline_keyboard_paginator = InlineKeyboardPaginator(TIME_RANGE, 4, "to")
+
 db = db.PinginatorDb(MongoClient(os.environ['MONGODB_URI']), os.environ['DB'])
+bot = TeleBot(TOKEN)
 
 
 def is_creator(group_id, user_id):
@@ -26,16 +32,6 @@ def is_creator(group_id, user_id):
 def is_administrator(group_id: int, user_id: int) -> bool:
     administrators = bot.get_chat_administrators(group_id)
     return True in [adm.user.id == user_id for adm in administrators]
-
-
-def create_quiet_keyboard(is_begin: bool):
-    keyboard = types.InlineKeyboardMarkup()
-    buttons = ([types.InlineKeyboardButton(text=str(x),
-                                           callback_data=('from_' if is_begin else 'to_') + str(x)) for x in
-                range(0, 24)])
-    for button in buttons:
-        keyboard.add(button)
-    return keyboard
 
 
 def try_insert_user(group_id: int, user: types.User, chat_type: str):
@@ -79,21 +75,31 @@ def restricted_quiet_hours_callback(query: types.CallbackQuery):
     bot.answer_callback_query(query.id, 'You are not privileged to configure this.', show_alert=True)
 
 
-@bot.callback_query_handler(func=lambda query: 'from' in query.data)
+@bot.callback_query_handler(func=lambda query: from_inline_keyboard_paginator.corresponds_to_keyboard(query.data))
 def quiet_beginning_hours_callback(query: types.CallbackQuery):
     group_id = query.message.chat.id
-    db.add_beginning_quiet_hour(group_id, int(query.data.split('_')[1]))
-    bot.delete_message(group_id, query.message.message_id)
-    bot.send_message(group_id, 'Well done. I remember that, but what about the ending?',
-                     reply_markup=create_quiet_keyboard(False))
+    is_data, data = from_inline_keyboard_paginator.get_content(query.data)
+    if is_data:
+        db.add_beginning_quiet_hour(group_id, int(data))
+        bot.delete_message(group_id, query.message.message_id)
+        bot.send_message(group_id, 'Well done. I remember that, but what about the ending?',
+                         reply_markup=to_inline_keyboard_paginator.get(0))
+    else:
+        bot.edit_message_reply_markup(group_id, message_id=query.message.message_id,
+                                      reply_markup=from_inline_keyboard_paginator.get(data))
 
 
-@bot.callback_query_handler(func=lambda query: 'to' in query.data)
+@bot.callback_query_handler(func=lambda query: to_inline_keyboard_paginator.corresponds_to_keyboard(query.data))
 def quiet_ending_hours_callback(query: types.CallbackQuery):
     group_id = query.message.chat.id
-    db.add_ending_quiet_hour(group_id, int(query.data.split('_')[1]))
-    bot.delete_message(group_id, query.message.message_id)
-    bot.send_message(group_id, 'Configuration is done. BYE')
+    is_data, data = to_inline_keyboard_paginator.get_content(query.data)
+    if is_data:
+        db.add_ending_quiet_hour(group_id, int(data))
+        bot.delete_message(group_id, query.message.message_id)
+        bot.send_message(group_id, 'Configuration is done. Have a nice day')
+    else:
+        bot.edit_message_reply_markup(group_id, message_id=query.message.message_id,
+                                      reply_markup=to_inline_keyboard_paginator.get(data))
 
 
 @bot.message_handler(commands=['quiet_hours'], func=lambda message: is_creator(message.chat.id, message.from_user.id))
@@ -101,7 +107,7 @@ def admin_configuration_quiet_handler(message: types.Message):
     try_insert_user(message.chat.id, message.from_user, message.chat.type)
     bot.send_message(message.chat.id, 'Let\'s configure quiet hours. Please choose the beginning hour.\n'
                                       'Please, note: only the creator could use a button.',
-                     reply_markup=create_quiet_keyboard(True))
+                     reply_markup=from_inline_keyboard_paginator.get(0))
 
 
 @bot.message_handler(commands=['quiet_hours'])
