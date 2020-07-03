@@ -43,7 +43,7 @@ class PinginatorDb:
         self.__groups_collection.update_one({'_id': group_id},
                                             {'$pull': {'users': {'user_id': user.id}}})
 
-    def get_all_groups(self):
+    def get_all_groups(self) -> [Group]:
         return self.__groups_collection.find({})
 
     def remove_chat(self, group_id: int):

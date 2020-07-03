@@ -7,7 +7,7 @@ class User:
 
 
 class Group:
-    def __init__(self, users: [User], admin_only, quiet_hours: (int, int) = None):
+    def __init__(self, users: [User], admin_only: bool, quiet_hours: (int, int) = None):
         self.quiet_hours = quiet_hours
         self.users = users
         self.is_admin_only = admin_only

@@ -4,9 +4,9 @@ from telebot import types
 class InlineKeyboardPaginator:
     SEPARATOR = '%*%/%'
 
-    def __init__(self, buttons_content: [str], buttons_per_page: int, callback_prefix):
+    def __init__(self, buttons_content: [str], buttons_per_page: int, callback_prefix: str):
         """
-            Prefix shouldn't contain sequence of SEPARATOR, it used to split content
+            Prefix shouldn't contain sequence of SEPARATOR, it is used to split content
         """
 
         self._content = buttons_content
@@ -40,7 +40,7 @@ class InlineKeyboardPaginator:
     def corresponds_to_keyboard(self, data: str) -> bool:
         return self._callback_prefix in data
 
-    def get_content(self, data) -> (True, str) or (False, int):
+    def get_content(self, data: str) -> (True, str) or (False, int):
         """"
             Returns tuple with True and content from query data in case of matching to provided content
             Returns tuple with False and number of page to use in case of page switching

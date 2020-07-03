@@ -24,7 +24,7 @@ db = db.PinginatorDb(MongoClient(os.environ['MONGODB_URI']), os.environ['DB'])
 bot = TeleBot(TOKEN)
 
 
-def is_creator(group_id, user_id):
+def is_creator(group_id: int, user_id: int) -> bool:
     status = bot.get_chat_member(group_id, user_id)
     return status.status == 'creator'
 
@@ -39,9 +39,10 @@ def try_insert_user(group_id: int, user: types.User, chat_type: str):
         db.insert_user(group_id, User(user.id))
 
 
-@bot.message_handler(commands=['ping', 'all'], func=lambda message: message.chat.type == 'private')
+@bot.message_handler(commands=['ping', 'all', 'quiet_hours', 'admin_only'],
+                     func=lambda message: message.chat.type == 'private')
 def private_message_text_handler(message: types.Message):
-    bot.send_message(message.chat.id, 'I AM A GROUP BOT :C')
+    bot.send_message(message.chat.id, 'Group only feature')
 
 
 @bot.message_handler(commands=['ping', 'all'])
@@ -49,13 +50,13 @@ def text_handler(message: types.Message):
     group_id = message.chat.id
     try_insert_user(group_id, message.from_user, message.chat.type)
     group = db.get_group(group_id)
-    if group.is_quiet_hours_enabled(datetime.fromtimestamp(message.date)):
-        bot.send_message(group_id, 'Quiet hour politic is enabled now. I can\'t send a message.'
-                                   ' Please, use after ' + str(time(group.quiet_hours[1], 0)) +
-                         ', or change politic if you are the creator.')
-        return
-    elif group.is_admin_only and not is_administrator(group_id, message.from_user.id):
+    if group.is_admin_only and not is_administrator(group_id, message.from_user.id):
         bot.send_message(group_id, 'Sorry, only administrator could use this functionality')
+        return
+    elif group.is_quiet_hours_enabled(datetime.fromtimestamp(message.date)):
+        bot.send_message(group_id, 'Quiet hours policy is active now. I can\'t send a message. '
+                                   'Please, use after ' + str(time(group.quiet_hours[1], 0)) + ', '
+                                                                                               'or change the policy if you have rights.')
         return
     text = ''
     for user in group.users:
@@ -67,6 +68,8 @@ def text_handler(message: types.Message):
                 user_info.first_name if user_info.username is None else '@' + user_info.username, user_info.id)
     if len(text) > 0:
         bot.send_message(message.chat.id, text[:-2], parse_mode='markdown')
+    else:
+        bot.send_message(message.chat.id, "Sorry, I haven't parse anyone except you. Try again later.\n")
 
 
 @bot.callback_query_handler(func=lambda query: not is_creator(query.message.chat.id, query.from_user.id))
@@ -111,19 +114,29 @@ def admin_configuration_quiet_handler(message: types.Message):
 
 
 @bot.message_handler(commands=['quiet_hours'])
-def guest_quiet_handler(message):
+def guest_quiet_handler(message: types.Message):
     try_insert_user(message.chat.id, message.from_user, message.chat.type)
     bot.send_message(message.chat.id, 'Sorry, you are not privileged to configure this')
 
 
 @bot.message_handler(commands=['start', 'help'])
-def start_handler(message):
-    bot.send_message(message.chat.id, 'Hi ' + message.from_user.first_name + ',\n\nI am '
-                     + NAME + ', a bot which would help you to notify all people in a group.\n\n'
-                              'Use /ping or /all in a chat to take attention\n\n'
-                              'Also, you could configure me:\nUse /quiet_hours to set a time range '
-                              'in which I won\'t ping anyone\nWrite /admin_only to introduce a dictatorship of '
-                              'administrators into your chat.\n')
+def start_handler(message: types.Message):
+    message_str = 'Hi ' + message.from_user.first_name + ',\n\n' \
+                                                         'I am ' + NAME + ', a bot which would help you to notify all people in a group.\n\n' \
+                                                                          'Use /ping or /all in a chat to take attention\n\n' \
+                                                                          'Also, you could configure me:\n' \
+                                                                          'Use /quiet_hours to set a time range in which I won\'t ping anyone\n' \
+                                                                          'Write /admin_only to introduce a dictatorship of administrators into your chat.\n'
+
+    if message.chat.type == 'group':
+        group = db.get_group(group_id=message.chat.id)
+        message_str += '\nHere is the current configuration:\n' \
+                       'May any user pings all? --> ' + str(not group.is_admin_only) + '\n' \
+                                                                                       'Were quiet hours enabled? --> ' + \
+                       str(False if group.quiet_hours is None else 'Yes, It is on from {} to {}'.format(
+                           group.quiet_hours[0], group.quiet_hours[1]))
+
+    bot.send_message(message.chat.id, message_str)
     try_insert_user(message.chat.id, message.from_user, message.chat.type)
 
 
@@ -136,7 +149,7 @@ def set_admin_only(message: types.Message):
 
 @bot.message_handler(commands=['admin_only'])
 def restricted_admin_change(message: types.Message):
-    bot.send_message(message.chat.id, "Only the creator of the group could configure it.")
+    bot.send_message(message.chat.id, "Sorry, you are not privileged to configure this.")
 
 
 @bot.message_handler(content_types=["new_chat_members"])
@@ -154,7 +167,7 @@ def handler_left_member(message: types.Message):
 
 
 @bot.message_handler(content_types=["text"])
-def handler_text(message):
+def handler_text(message: types.Message):
     if '@' + LOGIN in message.text:
         bot.send_message(message.chat.id, '@' + message.from_user.username)
     elif NAME in message.text:
