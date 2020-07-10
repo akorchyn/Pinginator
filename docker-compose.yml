@@ -1,0 +1,19 @@
+version: '3'
+volumes:
+  mongodb_volume:
+services:
+  bot:
+    build: .
+    restart: always
+    env_file:
+      - bot.env
+    environment:
+      - MONGODB_URI=mongo
+
+  mongo:
+    image: mongo:latest
+    environment:
+      - MONGO_DATA_DIR=/data/db
+    volumes:
+      - mongodb_volume:/data/db
+    restart: always
