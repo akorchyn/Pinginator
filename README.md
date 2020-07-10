@@ -8,18 +8,25 @@ Feel free to test the bot: <https://www.t.me/pinginatorbot>
 
 ## Requirements
 ```
-mongodb
 pymongo
 PyTelegramBotApi
 
-You have to set environment variables BOT_TOKEN, BOT_LOGIN, BOT_NAME, MONGODB_URI, DB.
+You have to set environment variables BOT_TOKEN, BOT_LOGIN, BOT_NAME, DB in bot.env
 
 BOT_TOKEN - to provide telegram bot token
 BOT_LOGIN - to provide a bot tag (for example @pinginatorbot)
 BOT_NAME - to provide the name of the bot (for example Pinginator)
-MONGODB_URI - to provide the credentials to the MongoDB connection (for example localhost)
 DB - to provide the name of the database that should be used by the bot. Please, note that bot will use the `groups` collection.
 ```
+
+
+# Execution
+```
+Edit bot.env variables
+docker-compose up -d
+You are great
+```
+
 
 ## Commands
 
