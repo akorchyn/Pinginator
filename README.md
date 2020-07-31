@@ -11,7 +11,7 @@ Feel free to test the bot: <https://www.t.me/pinginatorbot>
 pymongo
 python-telegram-bot
 
-You have to set environment variables BOT_TOKEN, BOT_LOGIN, BOT_NAME, DB in bot.env
+You have to set environment variables BOT_TOKEN, MONGODB_URI
 
 BOT_TOKEN - to provide telegram bot token
 DB - to provide the name of the database that should be used by the bot. Please, note that bot will use the `groups` collection.
