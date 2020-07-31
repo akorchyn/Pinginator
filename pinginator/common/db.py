@@ -1,6 +1,6 @@
 import pymongo as db
 
-from group import Group, User
+from pinginator.common.group import Group, User
 
 
 class PinginatorDb:
@@ -48,3 +48,9 @@ class PinginatorDb:
 
     def remove_chat(self, group_id: int):
         self.__groups_collection.remove({'_id': group_id})
+
+    def migrate_group(self, previous_chat_id, new_chat_id):
+        group = self.__groups_collection.find_one({'_id': previous_chat_id})
+        group['_id'] = new_chat_id
+        self.__groups_collection.insert(group)
+        self.__groups_collection.remove(previous_chat_id)

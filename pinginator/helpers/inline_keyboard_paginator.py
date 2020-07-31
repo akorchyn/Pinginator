@@ -1,4 +1,4 @@
-from telebot import types
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 class InlineKeyboardPaginator:
@@ -15,27 +15,25 @@ class InlineKeyboardPaginator:
         self._amount_of_pages = self._buttons_size // buttons_per_page + (self._buttons_size % buttons_per_page > 0)
         self._callback_prefix = callback_prefix
 
-    def get(self, page: int) -> types.InlineKeyboardMarkup:
+    def get(self, page: int) -> InlineKeyboardMarkup:
         if page >= self._amount_of_pages:
             raise IndexError
 
-        keyboard = types.InlineKeyboardMarkup()
         buttons = []
         if page > 0:
-            buttons.append(types.InlineKeyboardButton(text='<',
-                                                      callback_data=self._callback_prefix + self.SEPARATOR + 'Page' +
-                                                                    self.SEPARATOR + str(page - 1)))
+            buttons.append(InlineKeyboardButton(text='<',
+                                                callback_data=self._callback_prefix + self.SEPARATOR + 'Page' +
+                                                              self.SEPARATOR + str(page - 1)))
         button_begin_index = self._amount_per_page * page
         button_end_index = self._amount_per_page * (page + 1) if \
             self._amount_per_page * (page + 1) <= self._buttons_size else self._buttons_size
-        buttons.extend(([types.InlineKeyboardButton(text=x, callback_data=self._callback_prefix + self.SEPARATOR + x)
+        buttons.extend(([InlineKeyboardButton(text=x, callback_data=self._callback_prefix + self.SEPARATOR + x)
                          for x in self._content[button_begin_index: button_end_index]]))
         if page < self._amount_of_pages - 1:
-            buttons.append(types.InlineKeyboardButton(text='>',
-                                                      callback_data=self._callback_prefix + self.SEPARATOR + 'Page' +
-                                                                    self.SEPARATOR + str(page + 1)))
-        keyboard.row(*buttons)
-        return keyboard
+            buttons.append(InlineKeyboardButton(text='>',
+                                                callback_data=self._callback_prefix + self.SEPARATOR + 'Page' +
+                                                              self.SEPARATOR + str(page + 1)))
+        return InlineKeyboardMarkup([buttons])
 
     def corresponds_to_keyboard(self, data: str) -> bool:
         return self._callback_prefix in data
