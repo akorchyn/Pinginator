@@ -31,7 +31,7 @@ def error_callback(update: Update, context: CallbackContext):
     try:
         raise context.error
     except Unauthorized:
-        db.remove_chat(update.effective_chat.id)
+        db.remove_group(update.effective_chat.id)
     except ChatMigrated as e:
         context.bot.send_message(e.new_chat_id, "New group, new life! Migration succeed")
         db.migrate_group(update.effective_chat.id, e.new_chat_id)
