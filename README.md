@@ -14,12 +14,17 @@ python-telegram-bot
 You have to set environment variables BOT_TOKEN, MONGODB_URI
 
 BOT_TOKEN - to provide telegram bot token
-DB - to provide the name of the database that should be used by the bot. Please, note that bot will use the `groups` collection.
 MONGODB_URI - to provide a mongodb server
+
+Optional:
+DB - to provide the name of the database that should be used by the bot. Please, note that bot will use the `groups` collection.
+     PinginatorDb is used by default
+OWNER_ID - the bot could send messages to you with call stack and Update in case of exception, so you could fix it and create a pull request,
+     or create an issue.
 ```
 
 
-# Execution
+## Execution
 ```
 Edit bot.env variables
 docker-compose up -d

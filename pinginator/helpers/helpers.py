@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext
 from pinginator.common.group import User
 
 
-def get_admin_ids(bot, chat_id):
+def get_admin_ids(bot: Bot, chat_id: int):
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
 
 

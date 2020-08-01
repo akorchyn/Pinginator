@@ -46,7 +46,7 @@ class PinginatorDb:
     def get_all_groups(self) -> [Group]:
         return self.__groups_collection.find({})
 
-    def remove_chat(self, group_id: int):
+    def remove_group(self, group_id: int):
         self.__groups_collection.remove({'_id': group_id})
 
     def migrate_group(self, previous_chat_id, new_chat_id):
