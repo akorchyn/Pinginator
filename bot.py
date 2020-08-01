@@ -10,6 +10,7 @@ from telegram.ext import Updater, Dispatcher, CallbackContext
 import pinginator.common.exceptions as internal_exceptions
 from pinginator.commands_handling.basic_commands import DISPATCHER_HANDLERS
 from pinginator.commands_handling.bot_configuration import CONFIGURATION_COMMANDS
+from pinginator.commands_handling.scheduled_messages import SCHEDULED_MESSAGE_COMMANDS, load_jobs
 from pinginator.commands_handling.telegram_status_updates import TELEGRAM_HANDLES
 from pinginator.common import db
 
@@ -56,7 +57,8 @@ def error_callback(update: Update, context: CallbackContext):
 
 dispatcher.bot_data['db'] = db
 dispatcher.add_error_handler(error_callback)
-for handles in [DISPATCHER_HANDLERS, CONFIGURATION_COMMANDS, TELEGRAM_HANDLES]:
+load_jobs(dispatcher.job_queue, db)
+for handles in [DISPATCHER_HANDLERS, CONFIGURATION_COMMANDS, TELEGRAM_HANDLES, SCHEDULED_MESSAGE_COMMANDS]:
     for handler in handles:
         dispatcher.add_handler(handler)
 updater.start_polling()

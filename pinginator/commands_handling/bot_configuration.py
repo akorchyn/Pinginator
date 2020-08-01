@@ -2,7 +2,6 @@ from telegram import Update, CallbackQuery
 from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 
 import pinginator.helpers.helpers as helpers
-from pinginator.common.exceptions import AccessDenied, QueryAccessDenied
 from pinginator.helpers.inline_keyboard_paginator import InlineKeyboardPaginator
 
 TIME_RANGE = [str(x) for x in range(24)]
@@ -11,11 +10,10 @@ from_inline_keyboard_paginator = InlineKeyboardPaginator(TIME_RANGE, 4, "from")
 to_inline_keyboard_paginator = InlineKeyboardPaginator(TIME_RANGE, 4, "to")
 
 
+@helpers.creator_only_query
 @helpers.insert_user
 def quiet_query_configuration(update: Update, context: CallbackContext):
     query: CallbackQuery = update.callback_query
-    if not helpers.is_creator(context.bot, update.effective_chat.id, query.from_user.id):
-        raise QueryAccessDenied()
     db = context.bot_data['db']
     group_id = query.message.chat.id
     is_from_keyboard = from_inline_keyboard_paginator.corresponds_to_keyboard(query.data)
@@ -39,19 +37,17 @@ def quiet_query_configuration(update: Update, context: CallbackContext):
         context.bot.edit_message_reply_markup(group_id, message_id=query.message.message_id, reply_markup=new_page)
 
 
+@helpers.creator_only_handle
 @helpers.insert_user
 def initiate_quiet_configuration(update: Update, context: CallbackContext):
-    if not helpers.is_creator(context.bot, update.effective_chat.id, update.effective_user.id):
-        raise AccessDenied()
     context.bot.send_message(update.effective_chat.id, 'Let\'s configure quiet hours. Please choose the beginning '
                                                        'hour.\n Please, note: only the creator could use a button.',
                              reply_markup=from_inline_keyboard_paginator.get(0))
 
 
+@helpers.creator_only_handle
 @helpers.insert_user
 def admin_only(update: Update, context: CallbackContext):
-    if not helpers.is_creator(context.bot, update.effective_chat.id, update.effective_user.id):
-        raise AccessDenied()
     db = context.bot_data['db']
     new_value = db.change_admin_only_flag(update.effective_chat.id)
     context.bot.send_message(update.effective_chat.id,

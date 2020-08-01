@@ -3,6 +3,7 @@ import functools
 from telegram import Bot, Update
 from telegram.ext import CallbackContext
 
+from pinginator.common.exceptions import AccessDenied, QueryAccessDenied
 from pinginator.common.group import User
 
 
@@ -33,6 +34,35 @@ def insert_user(func):
             if new_chat_member.is_bot:
                 continue
             db.insert_user(update.effective_chat.id, User(new_chat_member.id))
+        return func(update, context)
+
+    return wrapper
+
+
+def creator_only_handle(func):
+    """
+    If given user is not a creator, restrict access.
+    """
+
+    @functools.wraps(func)
+    def wrapper(update: Update, context: CallbackContext):
+        if not is_creator(context.bot, update.effective_chat.id, update.effective_user.id):
+            raise AccessDenied()
+        return func(update, context)
+
+    return wrapper
+
+
+def creator_only_query(func):
+    """
+    If given user is not a creator, restrict access.
+    """
+
+    @functools.wraps(func)
+    def wrapper(update: Update, context: CallbackContext):
+        query = update.callback_query
+        if not is_creator(context.bot, update.effective_chat.id, query.from_user.id):
+            raise QueryAccessDenied()
         return func(update, context)
 
     return wrapper

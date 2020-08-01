@@ -1,4 +1,11 @@
-from datetime import datetime, time
+from datetime import time, datetime
+
+
+class ScheduledMessage:
+    def __init__(self, message: str, period: str, start_day: datetime):
+        self.message = message
+        self.period = period
+        self.start_day = start_day
 
 
 class User:
@@ -7,10 +14,15 @@ class User:
 
 
 class Group:
-    def __init__(self, users: [User], admin_only: bool, quiet_hours: (int, int) = None):
+    def __init__(self, id: int, users: [User], admin_only: bool, messages: [ScheduledMessage] = None,
+                 quiet_hours: (int, int) = None):
+        if messages is None:
+            messages = []
+        self.id = id
         self.quiet_hours = quiet_hours
         self.users = users
         self.is_admin_only = admin_only
+        self.scheduled_messages = messages
 
     def is_quiet_hours_enabled(self, message_time: datetime) -> bool:
         if self.quiet_hours is None:

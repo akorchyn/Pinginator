@@ -42,6 +42,8 @@ You are great
 Bot configuration: (only for the creator of group)
 /quiet_hours - bot won't ping in quiet hours.
 /admin_only  - only administrators could use ping functionality
+/schedule - to schedule a new reapiting message
+/unschedule - to unschedule a scheduled message
 ```
 
 ## TODO:

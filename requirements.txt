@@ -1,2 +1,3 @@
 pymongo
 python-telegram-bot
+telegram_bot_calendar
