@@ -14,8 +14,8 @@ from pinginator.commands_handling.scheduled_messages import SCHEDULED_MESSAGE_CO
 from pinginator.commands_handling.telegram_status_updates import TELEGRAM_HANDLES
 from pinginator.common import db
 
-if 'BOT_TOKEN' not in os.environ or 'MONGODB_URI' not in os.environ:
-    print("Please set env variables: BOT_TOKEN, MONGODB_URI")
+if 'BOT_TOKEN' not in os.environ or 'DB_URL' not in os.environ:
+    print("Please set env variables: BOT_TOKEN, DB_URL")
     exit(0)
 
 OWNER_ID = int(os.environ['OWNER_ID']) if 'OWNER_ID' in os.environ else None
@@ -27,7 +27,7 @@ dispatcher: Dispatcher = updater.dispatcher
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
-db = db.PinginatorDb(MongoClient(os.environ['MONGODB_URI']), os.environ['DB'])
+db = db.PinginatorDb(MongoClient(os.environ['DB_URL']), os.environ['DB'])
 
 
 def write_to_owner(update: Update):
