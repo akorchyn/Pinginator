@@ -1,6 +1,6 @@
 from datetime import time
 
-from telegram import Update, User
+from telegram import Update, User, TelegramError
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler
 
 import pinginator.helpers.helpers as helpers
@@ -22,7 +22,7 @@ def text_handler(update: Update, context: CallbackContext):
 
 @helpers.insert_user
 def ping(update: Update, context: CallbackContext):
-    db = context.bot_data['db']
+    db: PinginatorDb = context.bot_data['db']
     group_id = update.effective_chat.id
     group = db.get_group(group_id)
     if group.is_admin_only and not helpers.is_administrator(context.bot, group_id, update.effective_user.id):
@@ -34,12 +34,18 @@ def ping(update: Update, context: CallbackContext):
         return
     text = ''
     for user in group.users:
-        if user.id == update.effective_user.id:
-            continue
-        user_info: User = context.bot.get_chat_member(group_id, user.id).user
-        if user_info is not None:
-            text += '[{}](tg://user?id={}), '.format(
-                user_info.first_name if user_info.username is None else '@' + user_info.username, user_info.id)
+        try:
+            if user.id == update.effective_user.id:
+                continue
+            user_info: User = context.bot.get_chat_member(group_id, user.id).user
+            if user_info is not None:
+                text += '[{}](tg://user?id={}), '.format(
+                    user_info.first_name if user_info.username is None else '@' + user_info.username, user_info.id)
+        except TelegramError:
+            """ The user is no more in the group and we didn't remove it for some reason
+                (maybe, the bot was disabled when the user left)
+            """
+            db.remove_user(group_id, user)
     if len(text) > 0:
         context.bot.send_message(group_id, text[:-2], parse_mode='markdown')
     else:
@@ -50,12 +56,13 @@ def ping(update: Update, context: CallbackContext):
 def start_handler(update: Update, context: CallbackContext):
     db: PinginatorDb = context.bot_data['db']
     message_str = 'Hi ' + update.effective_user.first_name + ',\n\n' \
-                                                             'I am ' + context.bot.first_name + ', a bot which would help you to notify all people in a group.\n\n' \
-                                                                                                'Use /ping or /all in a chat to take attention\n\n' \
-                                                                                                'Also, you could configure me:\n' \
-                                                                                                'Use /quiet_hours to set a time range in which I won\'t ping anyone\n' \
-                                                                                                'Write /admin_only to introduce a dictatorship of administrators into your chat.\n' \
-                                                                                                'You could schedule reapeted messages by /schedule and /unschedule commands\n'
+                                                             'I am ' + context.bot.first_name + \
+                  ', a bot which would help you to notify all people in a group.\n\n' \
+                  'Use /ping or /all in a chat to take attention\n\n' \
+                  'Also, you could configure me:\n' \
+                  'Use /quiet_hours to set a time range in which I won\'t ping anyone\n' \
+                  'Write /admin_only to introduce a dictatorship of administrators into your chat.\n' \
+                  'You could schedule reapeted messages by /schedule and /unschedule commands\n'
 
     if update.effective_chat.type == 'group':
         group = db.get_group(group_id=update.effective_chat.id)
