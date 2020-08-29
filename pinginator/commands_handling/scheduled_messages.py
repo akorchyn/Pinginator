@@ -49,10 +49,11 @@ def add_one_month(orig_date) -> datetime:
 def run_job(queue: JobQueue, message: ScheduledMessage, chat_id: int):
     if message.period == 'daily':
         insert_job_to_jobs(chat_id, queue.run_daily(create_scheduled_message_callbacK(chat_id, message.message),
-                                                    message.start_day))
+                                                    message.start_day.time()))
     elif message.period == 'monthly':
         insert_job_to_jobs(chat_id, queue.run_monthly(create_scheduled_message_callbacK(chat_id, message.message),
-                                                      message.start_day, message.start_day.date().day))
+                                                      message.start_day.time(), message.start_day.date().day,
+                                                      day_is_strict=False))
     elif message.period == 'once':
         insert_job_to_jobs(chat_id, queue.run_once(create_scheduled_message_callbacK(chat_id, message.message),
                                                    message.start_day))
