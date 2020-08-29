@@ -54,7 +54,8 @@ def start_handler(update: Update, context: CallbackContext):
                                                                                                 'Use /ping or /all in a chat to take attention\n\n' \
                                                                                                 'Also, you could configure me:\n' \
                                                                                                 'Use /quiet_hours to set a time range in which I won\'t ping anyone\n' \
-                                                                                                'Write /admin_only to introduce a dictatorship of administrators into your chat.\n'
+                                                                                                'Write /admin_only to introduce a dictatorship of administrators into your chat.\n' \
+                                                                                                'You could schedule reapeted messages by /schedule and /unschedule commands\n'
 
     if update.effective_chat.type == 'group':
         group = db.get_group(group_id=update.effective_chat.id)

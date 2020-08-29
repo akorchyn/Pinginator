@@ -31,7 +31,7 @@ def create_scheduled_message_callbacK(chat_id: int, message: str):
     return callback
 
 
-def add_one_month(orig_date):
+def add_one_month(orig_date) -> datetime:
     # advance year and month by one month
     new_year = orig_date.year
     new_month = orig_date.month + 1
@@ -60,14 +60,25 @@ def run_job(queue: JobQueue, message: ScheduledMessage, chat_id: int):
         raise RuntimeError("Something strange happen")
 
 
+def adjust_message(msg: ScheduledMessage, current_date: datetime):
+    while current_date > msg.start_day:
+        msg.start_day = add_one_month(msg.start_day)
+    return msg
+
+
 def load_jobs(queue: JobQueue, db: PinginatorDb):
     groups = db.get_all_groups()
     date = datetime.datetime.now()
     for group in groups:
         for (index, message) in enumerate(group.scheduled_messages):
-            if date > message.start_day and message.period == 'once':
+            if date > message.start_day:
                 db.remove_scheduled_message(group.id, index)
-                continue
+                if message.period != 'once':
+                    message = adjust_message(message, date)
+                    db.add_scheduled_message(group.id, message)
+                else:
+                    # we shouldn't run job that is finished
+                    continue
             run_job(queue, message, group.id)
 
 
