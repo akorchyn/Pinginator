@@ -165,19 +165,19 @@ def remove_scheduled_message(update: Update, context: CallbackContext):
 @helpers.creator_only_handle
 @helpers.insert_user
 def schedule_message(update: Update, context: CallbackContext):
-    args = context.args
-    if not args:
-        context.bot.send_message(update.effective_chat.id, "Schedule format: /schedule message")
-        return
-    message = " ".join(args)
-    keyboard = [[InlineKeyboardButton("Once", callback_data=prefix_to_date + 'once'),
-                 InlineKeyboardButton("Daily", callback_data=prefix_to_date + 'daily'),
-                 InlineKeyboardButton("Monthly", callback_data=prefix_to_date + 'monthly')]]
-    context.chat_data['scheduled_msg'] = message
-    context.bot.send_message(update.effective_chat.id, 'Ok, I got it. The message is `' + message + '`. How often '
-                                                                                                    'should I ping?',
-                             parse_mode="Markdown",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+    msg_text = "Please, provide text of the scheduled message:\n"
+    msg_id = context.bot.send_message(update.effective_chat.id, msg_text).message_id
+
+    def input_callback(message: str):
+        keyboard = [[InlineKeyboardButton("Once", callback_data=prefix_to_date + 'once'),
+                     InlineKeyboardButton("Daily", callback_data=prefix_to_date + 'daily'),
+                     InlineKeyboardButton("Monthly", callback_data=prefix_to_date + 'monthly')]]
+        context.chat_data['scheduled_msg'] = message
+        context.bot.edit_message_text('Ok, I got it. The message is `' + message + '`. How often should I ping?',
+                                      parse_mode="Markdown", message_id=msg_id, chat_id=update.effective_chat.id,
+                                      reply_markup=InlineKeyboardMarkup(keyboard))
+
+    context.bot_data['waiting_input'].append((update.effective_chat.id, update.effective_user.id, input_callback))
 
 
 SCHEDULED_MESSAGE_COMMANDS = [CommandHandler("schedule", schedule_message, pass_args=True),

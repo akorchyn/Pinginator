@@ -56,6 +56,7 @@ def error_callback(update: Update, context: CallbackContext):
 
 
 dispatcher.bot_data['db'] = db
+dispatcher.bot_data['waiting_input'] = []
 dispatcher.add_error_handler(error_callback)
 load_jobs(dispatcher.job_queue, db)
 for handles in [DISPATCHER_HANDLERS, CONFIGURATION_COMMANDS, TELEGRAM_HANDLES, SCHEDULED_MESSAGE_COMMANDS]:

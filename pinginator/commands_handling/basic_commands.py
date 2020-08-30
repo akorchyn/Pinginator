@@ -14,6 +14,13 @@ def private_message_text_handler(update: Update, context: CallbackContext):
 
 @helpers.insert_user
 def text_handler(update: Update, context: CallbackContext):
+    waiting_input = context.bot_data['waiting_input']
+    for index, (group_id, user_id, callback) in enumerate(waiting_input):
+        if group_id != update.effective_chat.id and user_id != update.effective_user.id:
+            continue
+        callback(update.effective_message.text)
+        del waiting_input[index]
+        return
     if '@' + context.bot.username in update.effective_message.text:
         context.bot.send_message(update.effective_chat.id, '@' + update.effective_user.username)
     elif context.bot.first_name in update.effective_message.text:
