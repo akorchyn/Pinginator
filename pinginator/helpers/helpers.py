@@ -5,6 +5,7 @@ from telegram.ext import CallbackContext
 
 from pinginator.common.exceptions import AccessDenied, QueryAccessDenied
 from pinginator.common.group import User
+from pinginator.helpers.user_loading import TELETHON_ENABLED
 
 
 def get_admin_ids(bot: Bot, chat_id: int):
@@ -27,6 +28,8 @@ def insert_user(func):
 
     @functools.wraps(func)
     def wrapper(update: Update, context: CallbackContext):
+        if TELETHON_ENABLED:
+            return func(update, context)
         db = context.bot_data['db']
         if update.effective_chat.type != 'private' and not update.effective_user.is_bot:
             db.insert_user(update.effective_chat.id, User(update.effective_user.id))

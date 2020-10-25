@@ -44,6 +44,8 @@ class PinginatorDb:
 
     def get_group(self, group_id: int) -> Group:
         group_data = self.__groups_collection.find_one({"_id": group_id})
+        if group_data is None:
+            return Group(group_id)
         return self.__get_group_from_cursor(group_data)
 
     def insert_user(self, group_id: int, user: User):

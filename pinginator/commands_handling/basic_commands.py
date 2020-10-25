@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandle
 import pinginator.helpers.helpers as helpers
 from pinginator.common.db import PinginatorDb
 from pinginator.common.exceptions import AccessDenied
-
+from pinginator.helpers.user_loading import load_users_info_from_group
 
 def private_message_text_handler(update: Update, context: CallbackContext):
     context.bot.send_message(update.effective_chat.id, 'Group only feature')
@@ -40,19 +40,19 @@ def ping(update: Update, context: CallbackContext):
                                                                                                        'or change the policy if you have rights.')
         return
     text = ''
-    for user in group.users:
+    user_infos = load_users_info_from_group(context.bot, group)
+    for user_info in user_infos:
         try:
-            if user.id == update.effective_user.id:
+            if user_info.user_id == update.effective_user.id:
                 continue
-            user_info: User = context.bot.get_chat_member(group_id, user.id).user
             if user_info is not None:
                 text += '[{}](tg://user?id={}), '.format(
-                    user_info.first_name if user_info.username is None else '@' + user_info.username, user_info.id)
+                    user_info.first_name if user_info.login is None else '@' + user_info.login, user_info.user_id)
         except TelegramError:
             """ The user is no more in the group and we didn't remove it for some reason
                 (maybe, the bot was disabled when the user left)
             """
-            db.remove_user(group_id, user)
+            db.remove_user(group_id, user_info.id)
     if len(text) > 0:
         context.bot.send_message(group_id, text[:-2], parse_mode='markdown')
     else:

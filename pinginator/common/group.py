@@ -13,8 +13,16 @@ class User:
         self.id = user_id
 
 
+class UserInfo:
+    def __init__(self, user_id: id, login: str, first_name: str, last_name: str):
+        self.user_id = user_id
+        self.login = login
+        self.first_name = first_name
+        self.last_name = last_name
+
+
 class Group:
-    def __init__(self, id: int, users: [User], admin_only: bool, messages: [ScheduledMessage] = None,
+    def __init__(self, id: int, users: [User] = [], admin_only: bool = False, messages: [ScheduledMessage] = None,
                  quiet_hours: (int, int) = None):
         if messages is None:
             messages = []

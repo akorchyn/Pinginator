@@ -15,14 +15,25 @@ You have to set environment variables BOT_TOKEN, MONGODB_URI
 
 BOT_TOKEN - to provide telegram bot token
 DB_URL - to provide a MongoDB server
-
-Optional:
 DB - to provide the name of the database that should be used by the bot. Please, note that bot will use the `groups` collection.
      PinginatorDb is used by default
+
+Optional:
 OWNER_ID - to provide a telegram user to which bot will send unhandled exceptions. (I hope, it won't)
            Please, note that the user should activate chat with the bot first.
 ```
 
+## Optimization user loading
+
+```
+There is a way to fetch all users from the telegram by using the mtproto protocol directly bypassing bot API.
+You should create an application on https://my.telegram.org
+and provide BOT_ID and BOT_HASH_ID and TELETHON_OPTIMIZATION=On variables,
+you should install the `telethon` library.
+
+Please, note the bot won't collect users while he uses the MTProto directly,
+so in case of rollback to the bot API, you won't have any/or only collected earlier users.
+```
 
 ## Execution
 ```
