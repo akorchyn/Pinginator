@@ -2,7 +2,8 @@
 The bot is your nightmare. It is your neighbor. It pings all collected users from the group.
 
 The main problem is that telegram bot API doesn't provide an opportunity to get users from the group.
-So bot collects them from messages, telegram status updates(joined users, etc)
+So bot collects them from messages, telegram status updates(joined users, left), etc
+There is an optional way to use telegram client API(MTProto) to get all users instead of collecting them(@see Optimization user loading)
 
 Feel free to test the bot: <https://www.t.me/pinginatorbot>
 
