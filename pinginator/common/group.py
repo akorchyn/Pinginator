@@ -22,11 +22,11 @@ class UserInfo:
 
 
 class Group:
-    def __init__(self, id: int, users: [User] = [], admin_only: bool = False, messages: [ScheduledMessage] = None,
+    def __init__(self, chat_id: int, users: [User] = [], admin_only: bool = False, messages: [ScheduledMessage] = None,
                  quiet_hours: (int, int) = None):
         if messages is None:
             messages = []
-        self.id = id
+        self.id = chat_id
         self.quiet_hours = quiet_hours
         self.users = users
         self.is_admin_only = admin_only

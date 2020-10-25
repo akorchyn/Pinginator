@@ -77,6 +77,8 @@ class PinginatorDb:
 
     def add_scheduled_message(self, group_id: int, msg: ScheduledMessage):
         self.__groups_collection.update_one({'_id': group_id},
-                                            {'$push': {'scheduled_messages':
-                                                           {'message': msg.message, 'period': msg.period,
-                                                            'date': msg.start_day.timestamp()}}}, upsert=True)
+                                            {'$push': {'scheduled_messages': {
+                                                               'message': msg.message,
+                                                               'period': msg.period,
+                                                               'date': msg.start_day.timestamp()}}},
+                                            upsert=True)

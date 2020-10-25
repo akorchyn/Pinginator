@@ -22,8 +22,8 @@ class InlineKeyboardPaginator:
         buttons = []
         if page > 0:
             buttons.append(InlineKeyboardButton(text='<',
-                                                callback_data=self._callback_prefix + self.SEPARATOR + 'Page' +
-                                                              self.SEPARATOR + str(page - 1)))
+                                                callback_data=(self._callback_prefix + self.SEPARATOR + 'Page' +
+                                                               self.SEPARATOR + str(page - 1))))
         button_begin_index = self._amount_per_page * page
         button_end_index = self._amount_per_page * (page + 1) if \
             self._amount_per_page * (page + 1) <= self._buttons_size else self._buttons_size
@@ -31,8 +31,8 @@ class InlineKeyboardPaginator:
                          for x in self._content[button_begin_index: button_end_index]]))
         if page < self._amount_of_pages - 1:
             buttons.append(InlineKeyboardButton(text='>',
-                                                callback_data=self._callback_prefix + self.SEPARATOR + 'Page' +
-                                                              self.SEPARATOR + str(page + 1)))
+                                                callback_data=(self._callback_prefix + self.SEPARATOR + 'Page' +
+                                                               self.SEPARATOR + str(page + 1))))
         return InlineKeyboardMarkup([buttons])
 
     def corresponds_to_keyboard(self, data: str) -> bool:

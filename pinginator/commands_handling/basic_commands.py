@@ -1,12 +1,13 @@
 from datetime import time
 
-from telegram import Update, User, TelegramError
+from telegram import Update, TelegramError
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler
 
 import pinginator.helpers.helpers as helpers
 from pinginator.common.db import PinginatorDb
 from pinginator.common.exceptions import AccessDenied
 from pinginator.helpers.user_loading import load_users_info_from_group
+
 
 def private_message_text_handler(update: Update, context: CallbackContext):
     context.bot.send_message(update.effective_chat.id, 'Group only feature')
@@ -37,7 +38,7 @@ def ping(update: Update, context: CallbackContext):
     elif group.is_quiet_hours_enabled(update.message.date):
         context.bot.send_message(group_id, 'Quiet hours policy is active now. I can\'t send a message. '
                                            'Please, use after ' + str(time(group.quiet_hours[1], 0)) + ', '
-                                                                                                       'or change the policy if you have rights.')
+                                           'or change the policy if you have rights.')
         return
     text = ''
     user_infos = load_users_info_from_group(context.bot, group)
@@ -47,7 +48,7 @@ def ping(update: Update, context: CallbackContext):
                 continue
             if user_info is not None:
                 text += '[{}](tg://user?id={}), '.format(
-                    user_info.first_name if user_info.login is None else '@' + user_info.login, user_info.user_id)
+                    user_info.first_name if user_info.login is None else '@' + str(user_info.login), user_info.user_id)
         except TelegramError:
             """ The user is no more in the group and we didn't remove it for some reason
                 (maybe, the bot was disabled when the user left)
@@ -75,7 +76,7 @@ def start_handler(update: Update, context: CallbackContext):
         group = db.get_group(group_id=update.effective_chat.id)
         message_str += '\nHere is the current configuration:\n' \
                        'May any user pings all? --> ' + str(not group.is_admin_only) + '\n' \
-                                                                                       'Were quiet hours enabled? --> ' + \
+                       'Were quiet hours enabled? --> ' + \
                        str(False if group.quiet_hours is None else 'Yes, It is on from {} to {}'.format(
                            group.quiet_hours[0], group.quiet_hours[1]))
 

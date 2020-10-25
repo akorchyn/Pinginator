@@ -1,6 +1,6 @@
 from telegram import Bot
 
-from pinginator.common.group import UserInfo, Group
+from pinginator.common.group import UserInfo
 
 import os
 
