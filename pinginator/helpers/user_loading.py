@@ -1,6 +1,7 @@
 from telegram import Bot
 
 from pinginator.common.group import UserInfo
+from telegram import TelegramError
 
 import os
 
@@ -38,10 +39,17 @@ def __load_users_from_mtproto(chat_id: int) -> [UserInfo]:
     return result
 
 
-def load_users_info_from_group(bot: Bot, group) -> [UserInfo]:
+def load_users_info_from_group(bot: Bot, group, db) -> [UserInfo]:
     result = __load_users_from_mtproto(group.id)
     if not result:
         for user_id in group.users:
-            user = bot.get_chat_member(group.id, user_id.id).user
-            result.append(UserInfo(user.id, user.username, user.first_name, user.last_name))
+            try:
+                user = bot.get_chat_member(group.id, user_id.id).user
+                if user is not None:
+                    result.append(UserInfo(user.id, user.username, user.first_name, user.last_name))
+            except TelegramError:
+                """ The user is no more in the group and we didn't remove it for some reason
+                    (maybe, the bot was disabled when the user left)
+                """
+                db.remove_user(group.id, user_id)
     return result
