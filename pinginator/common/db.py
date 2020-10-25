@@ -33,7 +33,7 @@ class PinginatorDb:
         quiet_hours = (group_data['beginning_quiet_hour'], group_data['ending_quiet_hour']) \
             if 'beginning_quiet_hour' in group_data and 'ending_quiet_hour' in group_data else None
         is_admin_only = group_data['admin_only'] if 'admin_only' in group_data else False
-        users = [User(user['user_id']) for user in group_data['users']]
+        users = [User(user['user_id']) for user in group_data['users']] if 'users' in group_data else []
         messages = []
         if 'scheduled_messages' in group_data:
             for msg_info in group_data['scheduled_messages']:
