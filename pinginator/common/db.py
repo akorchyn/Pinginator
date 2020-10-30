@@ -38,8 +38,9 @@ class PinginatorDb:
         if 'scheduled_messages' in group_data:
             for msg_info in group_data['scheduled_messages']:
                 if 'message' in msg_info and 'period' in msg_info and 'date' in msg_info:
+                    should_ping = True if 'ping' in msg_info and msg_info['ping'] else False
                     messages.append(ScheduledMessage(msg_info['message'], msg_info['period'],
-                                                     datetime.fromtimestamp(msg_info['date'])))
+                                                     datetime.fromtimestamp(msg_info['date']), should_ping))
         return Group(group_data['_id'], users, is_admin_only, messages, quiet_hours)
 
     def get_group(self, group_id: int) -> Group:
@@ -80,5 +81,6 @@ class PinginatorDb:
                                             {'$push': {'scheduled_messages': {
                                                                'message': msg.message,
                                                                'period': msg.period,
-                                                               'date': msg.start_day.timestamp()}}},
+                                                               'date': msg.start_day.timestamp(),
+                                                               'ping': msg.should_ping}}},
                                             upsert=True)
