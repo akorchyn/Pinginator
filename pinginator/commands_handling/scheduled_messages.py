@@ -208,29 +208,6 @@ def query_to_tmp(update: Update, context: CallbackContext):
     query.edit_message_text("Thank you")
 
 
-def temporary_schedule_migration(bot, db: PinginatorDb):
-    groups = db.get_all_groups()
-    for group in groups:
-        for (index, message) in enumerate(group.scheduled_messages):
-            prepared_message = message.message
-            if message.period == 'daily':
-                prepared_message += '. [Daily at '
-            elif message.period == 'monthly':
-                prepared_message += '. [Each ' + str(message.start_day.date().day) + ' day of the month at '
-            elif message.period == 'once':
-                prepared_message += '. [Planned for ' + str(message.start_day.date()) + ' at '
-            prepared_message += (message.start_day.strftime('%H:%M') +
-                                 (". Pings everyone]\n" if message.should_ping else ']\n'))
-
-            keyboard = [[InlineKeyboardButton("Yes", callback_data=prefix_to_tmp + '%True%' + str(index)),
-                         InlineKeyboardButton("No", callback_data=prefix_to_tmp + '%False%' + str(index))]]
-            try:
-                bot.send_message(group.id, "Message: " + prepared_message + "Should I ping?",
-                                 reply_markup=InlineKeyboardMarkup(keyboard))
-            except:
-                db.remove_group(group.id)
-
-
 @helpers.creator_only_handle
 @helpers.insert_user
 def schedule_message(update: Update, context: CallbackContext):

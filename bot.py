@@ -10,7 +10,7 @@ from telegram.ext import Updater, Dispatcher, CallbackContext
 import pinginator.common.exceptions as internal_exceptions
 from pinginator.commands_handling.basic_commands import DISPATCHER_HANDLERS
 from pinginator.commands_handling.bot_configuration import CONFIGURATION_COMMANDS
-from pinginator.commands_handling.scheduled_messages import SCHEDULED_MESSAGE_COMMANDS, load_jobs, temporary_schedule_migration
+from pinginator.commands_handling.scheduled_messages import SCHEDULED_MESSAGE_COMMANDS, load_jobs
 from pinginator.commands_handling.telegram_status_updates import TELEGRAM_HANDLES
 from pinginator.common import db
 
@@ -59,7 +59,6 @@ dispatcher.bot_data['db'] = db
 dispatcher.bot_data['waiting_input'] = []
 dispatcher.add_error_handler(error_callback)
 load_jobs(dispatcher.job_queue, db)
-temporary_schedule_migration(dispatcher.bot, db)
 for handles in [DISPATCHER_HANDLERS, CONFIGURATION_COMMANDS, TELEGRAM_HANDLES, SCHEDULED_MESSAGE_COMMANDS]:
     for handler in handles:
         dispatcher.add_handler(handler)
