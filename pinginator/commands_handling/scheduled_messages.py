@@ -16,6 +16,7 @@ separator = "%id.*"
 prefix_to_date = "schedtodate"
 prefix_to_unschedule = 'unschedule'
 prefix_to_ping = "schedtoping"
+prefix_to_tmp = "tmp"
 
 
 def insert_job_to_jobs(chat_id, job):
@@ -187,6 +188,49 @@ def remove_scheduled_message(update: Update, context: CallbackContext):
     context.bot.send_message(update.effective_chat.id, prepared_message, reply_markup=keyboard_paginator.get(0))
 
 
+def query_to_tmp(update: Update, context: CallbackContext):
+    query: CallbackQuery = update.callback_query
+    data = query.data
+    array = data.split("%")
+    index = int(array[2])
+    should_ping = array[1] == "True"
+
+    db = context.bot_data['db']
+    group = db.get_group(update.effective_chat.id)
+    message = group.scheduled_messages[index]
+    db.remove_scheduled_message(update.effective_chat.id, index)
+    group_jobs = jobs[update.effective_chat.id]
+    active_job: Job = group_jobs.pop(index)
+    active_job.schedule_removal()
+
+    message.should_ping = should_ping
+    context.bot_data['db'].add_scheduled_message(update.effective_chat.id, message)
+    run_job(context.job_queue, message, update.effective_chat.id)
+
+    query.edit_message_text("Thank you")
+
+
+
+def temporary_schedule_migration(bot, db):
+    groups = db.get_all_groups()
+    for group in groups:
+        for (index, message) in enumerate(group.scheduled_messages):
+            prepared_message = message.message
+            if message.period == 'daily':
+                prepared_message += '. [Daily at '
+            elif message.period == 'monthly':
+                prepared_message += '. [Each ' + str(message.start_day.date().day) + ' day of the month at '
+            elif message.period == 'once':
+                prepared_message += '. [Planned for ' + str(message.start_day.date()) + ' at '
+            prepared_message += (message.start_day.strftime('%H:%M') +
+                                 (". Pings everyone]\n" if message.should_ping else ']\n'))
+
+            keyboard = [[InlineKeyboardButton("Yes", callback_data=prefix_to_tmp + '%True%' + str(index)),
+                         InlineKeyboardButton("No", callback_data=prefix_to_tmp + '%False%' + str(index))]]
+            bot.send_message(group.id, "Message: " + prepared_message + "Should I ping?",
+                             reply_markup=InlineKeyboardMarkup(keyboard))
+
+
 @helpers.creator_only_handle
 @helpers.insert_user
 def schedule_message(update: Update, context: CallbackContext):
@@ -208,6 +252,7 @@ def schedule_message(update: Update, context: CallbackContext):
 SCHEDULED_MESSAGE_COMMANDS = [CommandHandler("schedule", schedule_message, pass_args=True),
                               CallbackQueryHandler(query_to_date, pattern="^" + prefix_to_date + ".*"),
                               CallbackQueryHandler(query_to_ping, pattern="^" + prefix_to_ping + ".*"),
+                              CallbackQueryHandler(query_to_tmp, pattern="^" + prefix_to_tmp + ".*"),
                               CommandHandler("unschedule", remove_scheduled_message),
                               CallbackQueryHandler(query_to_unschedule, pattern='^' + prefix_to_unschedule + '.*'),
                               CallbackQueryHandler(query_to_result)]  # should be the last
