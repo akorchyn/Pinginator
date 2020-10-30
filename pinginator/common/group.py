@@ -2,10 +2,11 @@ from datetime import time, datetime
 
 
 class ScheduledMessage:
-    def __init__(self, message: str, period: str, start_day: datetime):
+    def __init__(self, message: str, period: str, start_day: datetime, should_ping: bool):
         self.message = message
         self.period = period
         self.start_day = start_day
+        self.should_ping = should_ping
 
 
 class User:

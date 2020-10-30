@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandle
 import pinginator.helpers.helpers as helpers
 from pinginator.common.db import PinginatorDb
 from pinginator.common.exceptions import AccessDenied
-from pinginator.helpers.user_loading import load_users_info_from_group
+from pinginator.helpers.user_loading import load_users_info_from_group, prepare_ping_message
 
 
 def private_message_text_handler(update: Update, context: CallbackContext):
@@ -40,15 +40,10 @@ def ping(update: Update, context: CallbackContext):
                                            'Please, use after ' + str(time(group.quiet_hours[1], 0)) + ', '
                                            'or change the policy if you have rights.')
         return
-    text = ''
     user_infos = load_users_info_from_group(context.bot, group)
-    for user_info in user_infos:
-        if user_info.user_id == update.effective_user.id:
-            continue
-        text += '[{}](tg://user?id={}), '.format(
-                user_info.first_name if user_info.login is None else '@' + str(user_info.login), user_info.user_id)
+    text = prepare_ping_message(user_infos, [update.effective_chat.id])
     if len(text) > 0:
-        context.bot.send_message(group_id, text[:-2], parse_mode='markdown')
+        context.bot.send_message(group_id, text, parse_mode='markdown')
     else:
         context.bot.send_message(group_id, "Sorry, I haven't parse anyone except you. Try again later.\n")
 

@@ -9,12 +9,13 @@ import pinginator.helpers.helpers as helpers
 from pinginator.common.db import PinginatorDb
 from pinginator.common.group import ScheduledMessage, Group
 from pinginator.helpers.inline_keyboard_paginator import InlineKeyboardPaginator
+from pinginator.helpers.user_loading import prepare_ping_message, load_users_info_from_group
 
 jobs = {}
 separator = "%id.*"
 prefix_to_date = "schedtodate"
-prefix_to_result = "schedtoresult"
 prefix_to_unschedule = 'unschedule'
+prefix_to_ping = "schedtoping"
 
 
 def insert_job_to_jobs(chat_id, job):
@@ -24,9 +25,18 @@ def insert_job_to_jobs(chat_id, job):
         jobs[chat_id] = [job]
 
 
-def create_scheduled_message_callbacK(chat_id: int, message: str):
+def create_scheduled_message_callbacK(chat_id: int, message: ScheduledMessage):
     def callback(context: CallbackContext):
-        context.bot.send_message(chat_id, message)
+        print(message.should_ping)
+        if message.should_ping:
+            db: PinginatorDb = context.bot_data['db']
+            group = db.get_group(chat_id)
+            users = load_users_info_from_group(context.bot, group, db)
+            text = prepare_ping_message(users, [])
+            print(text)
+            context.bot.send_message(chat_id, text if len(text) > 0 else "Haven't parse anyone:C",
+                                     parse_mode='markdown')
+        context.bot.send_message(chat_id, message.message)
 
     return callback
 
@@ -48,14 +58,14 @@ def add_one_month(orig_date) -> datetime:
 
 def run_job(queue: JobQueue, message: ScheduledMessage, chat_id: int):
     if message.period == 'daily':
-        insert_job_to_jobs(chat_id, queue.run_daily(create_scheduled_message_callbacK(chat_id, message.message),
+        insert_job_to_jobs(chat_id, queue.run_daily(create_scheduled_message_callbacK(chat_id, message),
                                                     message.start_day.time()))
     elif message.period == 'monthly':
-        insert_job_to_jobs(chat_id, queue.run_monthly(create_scheduled_message_callbacK(chat_id, message.message),
+        insert_job_to_jobs(chat_id, queue.run_monthly(create_scheduled_message_callbacK(chat_id, message),
                                                       message.start_day.time(), message.start_day.date().day,
                                                       day_is_strict=False))
     elif message.period == 'once':
-        insert_job_to_jobs(chat_id, queue.run_once(create_scheduled_message_callbacK(chat_id, message.message),
+        insert_job_to_jobs(chat_id, queue.run_once(create_scheduled_message_callbacK(chat_id, message),
                                                    message.start_day))
     else:
         raise RuntimeError("Something strange happen")
@@ -103,7 +113,9 @@ def query_to_result(update: Update, context: CallbackContext):
         return
     period = context.chat_data['period']
     msg = context.chat_data['scheduled_msg']
-    message = ScheduledMessage(msg, period, datetime.datetime.combine(date, update.effective_message.date.time()))
+    should_ping = context.chat_data['ping']
+    message = ScheduledMessage(msg, period, datetime.datetime.combine(date, update.effective_message.date.time()),
+                               should_ping)
     context.bot_data['db'].add_scheduled_message(update.effective_chat.id, message)
     run_job(context.job_queue, message, update.effective_chat.id)
     query.edit_message_text("Done. Message successfully scheduled")
@@ -113,10 +125,22 @@ def query_to_result(update: Update, context: CallbackContext):
 @helpers.insert_user
 def query_to_date(update: Update, context: CallbackContext):
     query: CallbackQuery = update.callback_query
-    period = query.data[len(prefix_to_date):]
-    context.chat_data['period'] = period
+    should_ping = query.data[len(prefix_to_date):]
+    context.chat_data['ping'] = should_ping
     calendar, step = DetailedTelegramCalendar().build()
     query.edit_message_text("Please, select a " + LSTEP[step], reply_markup=calendar)
+
+
+@helpers.creator_only_handle
+@helpers.insert_user
+def query_to_ping(update: Update, context: CallbackContext):
+    query: CallbackQuery = update.callback_query
+    period = query.data[len(prefix_to_ping):]
+    context.chat_data['period'] = period
+
+    keyboard = [[InlineKeyboardButton("Yes", callback_data=prefix_to_date + 'True'),
+                 InlineKeyboardButton("No", callback_data=prefix_to_date + 'False')]]
+    query.edit_message_text('Ok, I got it. Should I ping?', reply_markup=InlineKeyboardMarkup(keyboard))
 
 
 @helpers.creator_only_query
@@ -156,7 +180,8 @@ def remove_scheduled_message(update: Update, context: CallbackContext):
             prepared_message += '. [Each ' + str(message.start_day.date().day) + ' day of the month at '
         elif message.period == 'once':
             prepared_message += '. [Planned for ' + str(message.start_day.date()) + ' at '
-        prepared_message += message.start_day.strftime('%H:%M') + '] \n'
+        prepared_message += (message.start_day.strftime('%H:%M') +
+                             (" . Pings everyone]\n" if message.should_ping else ']\n'))
     indexes = [str(x) for x in range(len(group.scheduled_messages))]
     keyboard_paginator = InlineKeyboardPaginator(indexes, 4, prefix_to_unschedule)
     context.bot.send_message(update.effective_chat.id, prepared_message, reply_markup=keyboard_paginator.get(0))
@@ -169,9 +194,9 @@ def schedule_message(update: Update, context: CallbackContext):
     msg_id = context.bot.send_message(update.effective_chat.id, msg_text).message_id
 
     def input_callback(message: str):
-        keyboard = [[InlineKeyboardButton("Once", callback_data=prefix_to_date + 'once'),
-                     InlineKeyboardButton("Daily", callback_data=prefix_to_date + 'daily'),
-                     InlineKeyboardButton("Monthly", callback_data=prefix_to_date + 'monthly')]]
+        keyboard = [[InlineKeyboardButton("Once", callback_data=prefix_to_ping + 'once'),
+                     InlineKeyboardButton("Daily", callback_data=prefix_to_ping + 'daily'),
+                     InlineKeyboardButton("Monthly", callback_data=prefix_to_ping + 'monthly')]]
         context.chat_data['scheduled_msg'] = message
         context.bot.edit_message_text('Ok, I got it. The message is `' + message + '`. How often should I ping?',
                                       parse_mode="Markdown", message_id=msg_id, chat_id=update.effective_chat.id,
@@ -182,6 +207,7 @@ def schedule_message(update: Update, context: CallbackContext):
 
 SCHEDULED_MESSAGE_COMMANDS = [CommandHandler("schedule", schedule_message, pass_args=True),
                               CallbackQueryHandler(query_to_date, pattern="^" + prefix_to_date + ".*"),
+                              CallbackQueryHandler(query_to_ping, pattern="^" + prefix_to_ping + ".*"),
                               CommandHandler("unschedule", remove_scheduled_message),
                               CallbackQueryHandler(query_to_unschedule, pattern='^' + prefix_to_unschedule + '.*'),
                               CallbackQueryHandler(query_to_result)]  # should be the last

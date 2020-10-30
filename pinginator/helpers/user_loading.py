@@ -13,6 +13,7 @@ if 'TELETHON_OPTIMIZATION' in os.environ and 'BOT_ID' in os.environ and 'BOT_HAS
         try:
             from telethon import TelegramClient
             from telethon.tl.types import InputPeerChat
+
             api_hash = os.environ['BOT_HASH_ID']
             api_id = os.environ['BOT_ID']
             token = os.environ['BOT_TOKEN']
@@ -53,3 +54,13 @@ def load_users_info_from_group(bot: Bot, group, db) -> [UserInfo]:
                 """
                 db.remove_user(group.id, user_id)
     return result
+
+
+def prepare_ping_message(user_infos: [UserInfo], excluded_user_id: [int]) -> str:
+    text = ""
+    for user_info in user_infos:
+        if user_info.user_id in excluded_user_id:
+            continue
+        text += '[{}](tg://user?id={}), '.format(
+            user_info.first_name if user_info.login is None else '@' + str(user_info.login), user_info.user_id)
+    return text[:-2] if len(text) > 0 else ""
