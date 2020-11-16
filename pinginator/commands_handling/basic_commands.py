@@ -35,12 +35,12 @@ def ping(update: Update, context: CallbackContext):
     group = db.get_group(group_id)
     if group.is_admin_only and not helpers.is_administrator(context.bot, group_id, update.effective_user.id):
         raise AccessDenied()
-    elif group.is_quiet_hours_enabled(update.message.date):
+    if group.is_quiet_hours_enabled(update.message.date):
         context.bot.send_message(group_id, 'Quiet hours policy is active now. I can\'t send a message. '
                                            'Please, use after ' + str(time(group.quiet_hours[1], 0)) + ', '
                                            'or change the policy if you have rights.')
         return
-    user_infos = load_users_info_from_group(context.bot, group)
+    user_infos = load_users_info_from_group(context.bot, group, db)
     text = prepare_ping_message(user_infos, [update.effective_chat.id])
     if len(text) > 0:
         context.bot.send_message(group_id, text, parse_mode='markdown')
