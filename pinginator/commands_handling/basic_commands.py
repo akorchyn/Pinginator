@@ -41,7 +41,7 @@ def ping(update: Update, context: CallbackContext):
                                            'or change the policy if you have rights.')
         return
     user_infos = load_users_info_from_group(context.bot, group, db)
-    text = prepare_ping_message(user_infos, [update.effective_chat.id])
+    text = prepare_ping_message(user_infos, [update.effective_user.id])
     if len(text) > 0:
         context.bot.send_message(group_id, text, parse_mode='markdown')
     else:
