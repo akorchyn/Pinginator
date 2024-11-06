@@ -17,3 +17,4 @@ services:
     volumes:
       - mongodb_volume:/data/db
     restart: always
+    
